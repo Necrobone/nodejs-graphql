@@ -48,6 +48,9 @@ app.use((request, response, next) => {
     "Access-Control-Allow-Headers",
     "Content-Type, Authorization"
   );
+  if (request.method === 'OPTIONS') {
+    return response.sendStatus(200);
+  }
   next();
 });
 
@@ -64,7 +67,7 @@ app.use('/graphql', graphqlHTTP({
   schema: graphQLSchema,
   rootValue: graphQLResolver,
   graphiql: true,
-  formatError(error) {
+  customFormatErrorFn(error) {
     if (!error.originalError) {
       return error;
     }
