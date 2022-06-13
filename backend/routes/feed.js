@@ -3,7 +3,7 @@ const express = require("express");
 const feedController = require("../controllers/feed");
 const { postFeedValidation } = require("../middlewares/postFeedValidation");
 const { putFeedValidation } = require("../middlewares/putFeedValidation");
-const isAuth = require("../middlewares/is-auth");
+const isAuth = require("../middlewares/auth");
 
 const router = express.Router();
 

@@ -8,6 +8,7 @@ const { graphqlHTTP } = require("express-graphql");
 
 const graphQLSchema = require('./graphql/schema');
 const graphQLResolver = require('./graphql/resolvers');
+const auth = require('./middlewares/auth');
 
 const MONGODB_URI =
   "mongodb+srv://root:wUkLd5QqMMX7vQgQ@shop.bcjtd.mongodb.net/feeds";
@@ -62,6 +63,8 @@ app.use((error, request, response, next) => {
 
   response.status(status).json({ message, data });
 });
+
+app.use(auth);
 
 app.use('/graphql', graphqlHTTP({
   schema: graphQLSchema,
