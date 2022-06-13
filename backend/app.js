@@ -1,4 +1,5 @@
 const path = require("path");
+const fs = require("fs");
 
 const express = require("express");
 const bodyParser = require("body-parser");
@@ -6,9 +7,9 @@ const mongoose = require("mongoose");
 const multer = require("multer");
 const { graphqlHTTP } = require("express-graphql");
 
-const graphQLSchema = require('./graphql/schema');
-const graphQLResolver = require('./graphql/resolvers');
-const auth = require('./middlewares/auth');
+const graphQLSchema = require("./graphql/schema");
+const graphQLResolver = require("./graphql/resolvers");
+const auth = require("./middlewares/auth");
 
 const MONGODB_URI =
   "mongodb+srv://root:wUkLd5QqMMX7vQgQ@shop.bcjtd.mongodb.net/feeds";
@@ -49,7 +50,7 @@ app.use((request, response, next) => {
     "Access-Control-Allow-Headers",
     "Content-Type, Authorization"
   );
-  if (request.method === 'OPTIONS') {
+  if (request.method === "OPTIONS") {
     return response.sendStatus(200);
   }
   next();
@@ -66,26 +67,52 @@ app.use((error, request, response, next) => {
 
 app.use(auth);
 
-app.use('/graphql', graphqlHTTP({
-  schema: graphQLSchema,
-  rootValue: graphQLResolver,
-  graphiql: true,
-  customFormatErrorFn(error) {
-    if (!error.originalError) {
-      return error;
-    }
-
-    const data = error.originalError.data;
-    const message = error.message || 'An error occurred.';
-    const code = error.originalError.code || 500;
-
-    return {
-      message,
-      code,
-      data
-    }
+app.put("/post-image", (request, response, next) => {
+  if (!request.isAuth) {
+    throw new Error("Not Authenticated");
   }
-}));
+
+  if (!request.file) {
+    return response.status(200).json({
+      message: "No file provided",
+    });
+  }
+
+  if (request.body.oldPath) {
+    clearImage(request.body.oldPath);
+  }
+
+  return response
+    .status(201)
+    .json({
+      message: "File Stored",
+      filePath: request.file.path.replace("\\", "/"),
+    });
+});
+
+app.use(
+  "/graphql",
+  graphqlHTTP({
+    schema: graphQLSchema,
+    rootValue: graphQLResolver,
+    graphiql: true,
+    customFormatErrorFn(error) {
+      if (!error.originalError) {
+        return error;
+      }
+
+      const data = error.originalError.data;
+      const message = error.message || "An error occurred.";
+      const code = error.originalError.code || 500;
+
+      return {
+        message,
+        code,
+        data,
+      };
+    },
+  })
+);
 
 mongoose
   .connect(MONGODB_URI)
@@ -98,3 +125,8 @@ mongoose
     });
   })
   .catch((error) => console.log(error));
+
+const clearImage = (filePath) => {
+  filePath = path.join(__dirname, filePath);
+  fs.unlink(filePath, (error) => console.log(error));
+};
