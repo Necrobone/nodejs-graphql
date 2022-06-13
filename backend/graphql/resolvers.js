@@ -264,4 +264,57 @@ module.exports = {
 
     return true;
   },
+  getUser: async function (arguments, request) {
+    if (!request.isAuth) {
+      const error = new Error("Not Authenticated!");
+      error.code = 401;
+      throw error;
+    }
+
+    const user = await User.findById(request.userId);
+    if (!user) {
+      const error = new Error("User not found.");
+      error.code = 404;
+      throw error;
+    }
+
+    return {
+      ...user._doc,
+      _id: user._id.toString(),
+    };
+  },
+  updateUserStatus: async function ({ status }, request) {
+    if (!request.isAuth) {
+      const error = new Error("Not Authenticated!");
+      error.code = 401;
+      throw error;
+    }
+
+    const errors = [];
+    if (validator.isEmpty(status)) {
+      errors.push({ message: "Status is Invalid" });
+    }
+
+    if (errors.length > 0) {
+      const error = new Error("Invalid Input");
+      error.data = errors;
+      error.code = 422;
+      throw error;
+    }
+
+    const user = await User.findById(request.userId);
+    if (!user) {
+      const error = new Error("User not found.");
+      error.code = 404;
+      throw error;
+    }
+
+    user.status = status;
+    await user.save();
+
+    return {
+      ...user._doc,
+      _id: user._id.toString(),
+    };
+  },
 };
