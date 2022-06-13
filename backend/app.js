@@ -62,7 +62,8 @@ app.use((error, request, response, next) => {
 
 app.use('/graphql', graphqlHTTP({
   schema: graphQLSchema,
-  rootValue: graphQLResolver
+  rootValue: graphQLResolver,
+  graphiql: true
 }));
 
 mongoose
