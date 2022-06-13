@@ -105,7 +105,7 @@ class Feed extends Component {
     const graphQLQuery = {
       query: `
         {
-          getPosts(page: 1, limit: 2) {
+          getPosts(page: ${page}) {
             posts {
               _id
               title
@@ -250,6 +250,7 @@ class Feed extends Component {
             );
             updatedPosts[postIndex] = post;
           } else {
+            updatedPosts.pop();
             updatedPosts.unshift(post);
           }
           return {
