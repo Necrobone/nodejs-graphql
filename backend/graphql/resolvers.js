@@ -80,7 +80,7 @@ module.exports = {
   },
   createPost: async function ({ postInput }, request) {
     if (!request.isAuth) {
-      const error = new Error('Not Authenticated!');
+      const error = new Error("Not Authenticated!");
       error.code = 401;
       throw error;
     }
@@ -109,7 +109,7 @@ module.exports = {
 
     const user = await User.findById(request.userId);
     if (!user) {
-      const error = new Error('Invalid user.');
+      const error = new Error("Invalid user.");
       error.code = 401;
       throw error;
     }
@@ -118,7 +118,7 @@ module.exports = {
       title: postInput.title,
       content: postInput.content,
       imageUrl: postInput.imageUrl,
-      creator: user
+      creator: user,
     });
     const createdPost = await post.save();
 
@@ -130,6 +130,42 @@ module.exports = {
       _id: createdPost._id.toString(),
       createdAt: createdPost.createdAt.toISOString(),
       updatedAt: createdPost.updatedAt.toISOString(),
+    };
+  },
+  getPosts: async function ({ page, limit }, request) {
+    if (!request.isAuth) {
+      const error = new Error("Not Authenticated!");
+      error.code = 401;
+      throw error;
+    }
+
+    const user = await User.findById(request.userId);
+    if (!user) {
+      const error = new Error("Invalid user.");
+      error.code = 401;
+      throw error;
+    }
+
+    page = page || 1;
+    limit = limit || 2;
+
+    const totalPosts = await Post.find().countDocuments();
+    const posts = await Post.find()
+      .populate("creator")
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    return {
+      posts: posts.map((post) => {
+        return {
+          ...post._doc,
+          _id: post._id.toString(),
+          createdAt: post.createdAt.toISOString(),
+          updatedAt: post.updatedAt.toISOString(),
+        };
+      }),
+      totalPosts,
     };
   },
 };
