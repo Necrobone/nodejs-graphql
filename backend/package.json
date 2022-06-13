@@ -1,0 +1,26 @@
+{
+  "name": "nodejs-graphsql",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.20.0",
+    "express": "^4.18.1",
+    "express-validator": "^6.14.1",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^6.3.6",
+    "multer": "^1.4.5-lts.1",
+    "nodemon": "^2.0.16",
+    "socket.io": "^4.5.1"
+  },
+  "devDependencies": {
+    "prettier": "2.6.2"
+  }
+}

@@ -1,0 +1,5 @@
+/.idea/
+/nodejs-graphql.iml
+/backend/node_modules/
+/backend/images/
+/frontend/node_modules/
