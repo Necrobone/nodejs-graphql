@@ -4,9 +4,10 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const multer = require("multer");
+const { graphqlHTTP } = require("express-graphql");
 
-const feedRoutes = require("./routes/feed");
-const authRoutes = require("./routes/auth");
+const graphQLSchema = require('./graphql/schema');
+const graphQLResolver = require('./graphql/resolvers');
 
 const MONGODB_URI =
   "mongodb+srv://root:wUkLd5QqMMX7vQgQ@shop.bcjtd.mongodb.net/feeds";
@@ -50,9 +51,6 @@ app.use((request, response, next) => {
   next();
 });
 
-app.use("/feed", feedRoutes);
-app.use("/auth", authRoutes);
-
 app.use((error, request, response, next) => {
   console.log(error);
   const status = error.statusCode;
@@ -62,14 +60,19 @@ app.use((error, request, response, next) => {
   response.status(status).json({ message, data });
 });
 
+app.use('/graphql', graphqlHTTP({
+  schema: graphQLSchema,
+  rootValue: graphQLResolver
+}));
+
 mongoose
   .connect(MONGODB_URI)
   .then(() => {
     const server = app.listen(8080);
-    const io = require('./socket').init(server);
+    const io = require("./socket").init(server);
 
-    io.on('connection', socket => {
-      console.log('Client connected');
+    io.on("connection", (socket) => {
+      console.log("Client connected");
     });
   })
   .catch((error) => console.log(error));
