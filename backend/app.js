@@ -1,5 +1,4 @@
 const path = require("path");
-const fs = require("fs");
 
 const express = require("express");
 const bodyParser = require("body-parser");
@@ -10,6 +9,7 @@ const { graphqlHTTP } = require("express-graphql");
 const graphQLSchema = require("./graphql/schema");
 const graphQLResolver = require("./graphql/resolvers");
 const auth = require("./middlewares/auth");
+const { clearImage } = require("./util/file");
 
 const MONGODB_URI =
   "mongodb+srv://root:wUkLd5QqMMX7vQgQ@shop.bcjtd.mongodb.net/feeds";
@@ -82,12 +82,10 @@ app.put("/post-image", (request, response, next) => {
     clearImage(request.body.oldPath);
   }
 
-  return response
-    .status(201)
-    .json({
-      message: "File Stored",
-      filePath: request.file.path.replace("\\", "/"),
-    });
+  return response.status(201).json({
+    message: "File Stored",
+    filePath: request.file.path.replace("\\", "/"),
+  });
 });
 
 app.use(
@@ -125,8 +123,3 @@ mongoose
     });
   })
   .catch((error) => console.log(error));
-
-const clearImage = (filePath) => {
-  filePath = path.join(__dirname, filePath);
-  fs.unlink(filePath, (error) => console.log(error));
-};

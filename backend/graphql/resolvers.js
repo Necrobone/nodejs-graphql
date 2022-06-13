@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 
 const User = require("../models/user");
 const Post = require("../models/post");
+const { clearImage } = require("../util/file");
 
 module.exports = {
   createUser: async function ({ userInput }, request) {
@@ -108,12 +109,6 @@ module.exports = {
     }
 
     const user = await User.findById(request.userId);
-    if (!user) {
-      const error = new Error("Invalid user.");
-      error.code = 401;
-      throw error;
-    }
-
     const post = new Post({
       title: postInput.title,
       content: postInput.content,
@@ -135,13 +130,6 @@ module.exports = {
   getPosts: async function ({ page, limit }, request) {
     if (!request.isAuth) {
       const error = new Error("Not Authenticated!");
-      error.code = 401;
-      throw error;
-    }
-
-    const user = await User.findById(request.userId);
-    if (!user) {
-      const error = new Error("Invalid user.");
       error.code = 401;
       throw error;
     }
@@ -218,13 +206,6 @@ module.exports = {
       throw error;
     }
 
-    const user = await User.findById(request.userId);
-    if (!user) {
-      const error = new Error("Invalid user.");
-      error.code = 401;
-      throw error;
-    }
-
     const post = await Post.findById(id).populate("creator");
     if (!post) {
       const error = new Error("No post found!");
@@ -252,5 +233,35 @@ module.exports = {
       createdAt: updatedPost.createdAt.toISOString(),
       updatedAt: updatedPost.updatedAt.toISOString(),
     };
+  },
+  deletePost: async function ({ id }, request) {
+    if (!request.isAuth) {
+      const error = new Error("Not Authenticated!");
+      error.code = 401;
+      throw error;
+    }
+
+    const post = await Post.findById(id);
+    if (!post) {
+      const error = new Error("No post found!");
+      error.code = 404;
+      throw error;
+    }
+
+    if (post.creator.toString() !== request.userId.toString()) {
+      const error = new Error("Not Authorized!");
+      error.code = 403;
+      throw error;
+    }
+
+    clearImage(post.imageUrl);
+    await Post.findByIdAndRemove(id);
+
+    const user = await User.findById(request.userId);
+    user.posts.pull(id);
+
+    await user.save();
+
+    return true;
   },
 };
